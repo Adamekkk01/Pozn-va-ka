@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Ptačí kvíz</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#eef6fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
+
+.container{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.15);
+    text-align:center;
+    width:520px;
+}
+
+img{
+    max-width:100%;
+    height:300px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+input{
+    margin-top:15px;
+    padding:10px;
+    width:70%;
+    font-size:16px;
+}
+
+button{
+    padding:10px 15px;
+    font-size:16px;
+    margin-left:5px;
+    cursor:pointer;
+}
+
+#result{
+    margin-top:15px;
+    font-weight:bold;
+    min-height:24px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Poznáš ptáka?</h2>
+    <img id="birdImage">
+    <div>
+        <input id="answer" placeholder="Napiš jméno ptáka..." />
+        <button onclick="checkAnswer()">Odeslat</button>
+    </div>
+    <div id="result"></div>
+</div>
+
+<script>
+
+// Seznam ptáků (jméno + obrázek)
+const birds = [
+{ name:"potápka roháč", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/%D0%A7%D0%BE%D0%BC%D0%B3%D0%B0-%D0%BC%D0%B0%D1%82%D1%8C_%D1%81_%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%BE%D0%BC%2C_%D0%A6%D0%B0%D1%80%D0%B8%D1%86%D1%8B%D0%BD%D0%BE.jpg/960px-%D0%A7%D0%BE%D0%BC%D0%B3%D0%B0-%D0%BC%D0%B0%D1%82%D1%8C_%D1%81_%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%BE%D0%BC%2C_%D0%A6%D0%B0%D1%80%D0%B8%D1%86%D1%8B%D0%BD%D0%BE.jpg"},
+{ name:"kormorán velký", img:"https://upload.wikimedia.org/wikipedia/commons/8/81/Phalacrocorax_carbo_-_01.jpg"},
+{ name:"čáp bílý", img:"https://upload.wikimedia.org/wikipedia/commons/6/6b/White_Stork_%28Ciconia_ciconia%29.jpg"},
+{ name:"čáp černý", img:"https://upload.wikimedia.org/wikipedia/commons/8/80/Ciconia_nigra_1_%28Marek_Szczepanek%29.jpg"},
+{ name:"volavka popelavá", img:"https://upload.wikimedia.org/wikipedia/commons/8/8b/Ardea_cinerea_5_%28Marek_Szczepanek%29.jpg"},
+{ name:"kachna divoká", img:"https://upload.wikimedia.org/wikipedia/commons/5/5a/Male_mallard_duck_2.jpg"},
+{ name:"labuť velká", img:"https://upload.wikimedia.org/wikipedia/commons/3/32/Cygnus_olor_2.jpg"},
+{ name:"poštolka obecná", img:"https://upload.wikimedia.org/wikipedia/commons/0/09/Kestrel_with_prey.jpg"},
+{ name:"káně lesní", img:"https://upload.wikimedia.org/wikipedia/commons/f/fa/Buteo_buteo_-Scotland-8.jpg"},
+{ name:"bažant obecný", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Fasan_auf_Spiekeroog_05.jpg/1280px-Fasan_auf_Spiekeroog_05.jpg"},
+{ name:"lyska černá", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Bl%C3%A4sshuhn_Fulica_atra_2_Richard_Bartz.jpg/1280px-Bl%C3%A4sshuhn_Fulica_atra_2_Richard_Bartz.jpg"},
+{ name:"racek chechtavý", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Chroicocephalus_ridibundus_%28summer%29.jpg/1280px-Chroicocephalus_ridibundus_%28summer%29.jpg"},
+{ name:"kukačka obecná", img:"https://upload.wikimedia.org/wikipedia/commons/4/4d/Common_Cuckoo_by_Mike_McKenzie.jpg"},
+{ name:"sova pálená", img:"https://upload.wikimedia.org/wikipedia/commons/1/17/Barn_Owl%2C_Lancashire.jpg"},
+{ name:"výr velký", img:"https://upload.wikimedia.org/wikipedia/commons/c/ca/Bubo_bubo_1_%28Martin_Mecnarowski%29.jpg"},
+{ name:"datel černý", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Peto_negro_%28cropped%29.jpg/960px-Peto_negro_%28cropped%29.jpg"},
+{ name:"žluna zelená", img:"https://upload.wikimedia.org/wikipedia/commons/3/38/Gr%C3%BCnspecht_Picus_viridis.jpg"},
+{ name:"strakapoud", img:"https://upload.wikimedia.org/wikipedia/commons/5/56/Dendrocopos_major_male.jpg"},
+{ name:"drozd zpěvný", img:"https://upload.wikimedia.org/wikipedia/commons/9/99/Song_thrush_by_Phil_McIver_-_small.jpg"},
+{ name:"sojka obecná", img:"https://upload.wikimedia.org/wikipedia/commons/5/50/Garrulus_glandarius_2.jpg"},
+{ name:"straka obecná", img:"https://upload.wikimedia.org/wikipedia/commons/2/24/Pica_pica_1.jpg"},
+{ name:"sýkora koňadra", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Parus_major_2_Luc_Viatour.jpg/1280px-Parus_major_2_Luc_Viatour.jpg"},
+{ name:"sýkora modřinka", img:"https://upload.wikimedia.org/wikipedia/commons/0/04/Cyanistes_caeruleus.jpg"},
+{ name:"špaček obecný", img:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Sturnus_vulgaris2.jpg"},
+{ name:"vlaštovka obecná", img:"https://upload.wikimedia.org/wikipedia/commons/0/01/Hirundo_rustica_-British_Wildlife_Centre-8.jpg"},
+{ name:"vrabec domácí", img:"https://upload.wikimedia.org/wikipedia/commons/0/0f/Passer_domesticus_male_%2815%29.jpg"},
+{ name:"kos černý", img:"https://upload.wikimedia.org/wikipedia/commons/5/5c/Turdus_merula_male_01.jpg"},
+{ name:"pěnkava obecná", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Buchfink_%2811%29_%2834980808596%29.jpg/1280px-Buchfink_%2811%29_%2834980808596%29.jpg"},
+{ name:"konipas bílý", img:"https://upload.wikimedia.org/wikipedia/commons/0/0b/Motacilla_alba.jpg"},
+{ name:"stehlík obecný", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/12_bis_13_Zentimeter_K%C3%B6rperl%C3%A4nge_erreicht_der_Stieglitz_%28Distelfink%29._09.jpg/960px-12_bis_13_Zentimeter_K%C3%B6rperl%C3%A4nge_erreicht_der_Stieglitz_%28Distelfink%29._09.jpg"},
+{ name:"husa velká", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Greylag-Goose.jpg/960px-Greylag-Goose.jpg"},
+{ name:"polák chocholačka", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Tufted-Duck-male-female.jpg/960px-Tufted-Duck-male-female.jpg"},
+{ name:"koroptev polní", img:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Perdix_perdix_2_%28Marek_Szczepanek%29.jpg"},
+{ name:"křepelka polní", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Coturnix_coturnix%2C_Fraunberg%2C_Bayern%2C_Deutschland_1.jpg/1280px-Coturnix_coturnix%2C_Fraunberg%2C_Bayern%2C_Deutschland_1.jpg"},
+{ name:"tetřev hlušec", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/David_Palmer_Capercaillie.jpg/1280px-David_Palmer_Capercaillie.jpg"},
+{ name:"čejka chocholatá", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Northern-Lapwing-Vanellus-vanellus.jpg/1280px-Northern-Lapwing-Vanellus-vanellus.jpg"},
+{ name:"hrdlička zahradní", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Collared_Dove.jpg/1280px-Collared_Dove.jpg"},
+{ name:"kalous ušatý", img:"https://upload.wikimedia.org/wikipedia/commons/9/97/Waldohreule_in_freier_Wildbahn.jpg"},
+{ name:"dlask tlustozobý", img:"https://upload.wikimedia.org/wikipedia/commons/6/67/Coccothraustes_coccothraustes_1_%28Marek_Szczepanek%29.jpg"},
+{ name:"havran polní", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Corvus_frugilegus_2.jpg/1280px-Corvus_frugilegus_2.jpg"},
+{ name:"hýl obecný", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Bullfinch_male.jpg/1280px-Bullfinch_male.jpg"},
+{ name:"jiřička obecná", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/House_Martin_by_christoph_moning.jpg/1280px-House_Martin_by_christoph_moning.jpg"},
+{ name:"ťuhýk obecný", img:"https://upload.wikimedia.org/wikipedia/commons/6/68/Lanius_collurio_2_%28Martin_Mecnarowski%29.jpg"},
+{ name:"vrána černá", img:"https://upload.wikimedia.org/wikipedia/commons/2/2c/Corvus_corone_1_%28Marek_Szczepanek%29.jpg"},
+{ name:"strnad obecný", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Gulsparv_Yellowhammer_%2831845135041%29.jpg/960px-Gulsparv_Yellowhammer_%2831845135041%29.jpg"},
+{ name:"zvonek zelený", img:"https://upload.wikimedia.org/wikipedia/commons/3/32/Carduelis_chloris_3_%28Marek_Szczepanek%29.jpg"},
+{ name:"žluva hajní", img:"https://upload.wikimedia.org/wikipedia/commons/6/69/Pirol_m.jpg"}
+];
+
+let currentBird;
+
+function normalize(text){
+    return text
+        .toLowerCase()
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""); // odstraní diakritiku
+}
+
+function nextBird(){
+    currentBird = birds[Math.floor(Math.random()*birds.length)];
+    document.getElementById("birdImage").src = currentBird.img;
+    document.getElementById("answer").value = "";
+    document.getElementById("result").textContent = "";
+}
+
+function checkAnswer(){
+    const user = normalize(document.getElementById("answer").value);
+    const correct = normalize(currentBird.name);
+
+    if(user === correct){
+        document.getElementById("result").style.color="green";
+        document.getElementById("result").textContent="Správně! 👍";
+        setTimeout(nextBird, 900);
+    }else{
+        document.getElementById("result").style.color="red";
+        document.getElementById("result").textContent=
+            "Špatně! Správná odpověď je: " + currentBird.name;
+        setTimeout(nextBird, 1800);
+    }
+}
+
+// Enter = odeslat
+document.getElementById("answer").addEventListener("keydown", e=>{
+    if(e.key==="Enter") checkAnswer();
+});
+
+nextBird();
+
+</script>
+</body>
+</html>
